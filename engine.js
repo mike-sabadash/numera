@@ -1,0 +1,4 @@
+const methods={numerology:'numerology',cosmos:'cosmos',synchronicity:'synchronicity'};
+const hash=s=>{let h=2166136261;for(const c of s){h^=c.codePointAt(0);h=Math.imul(h,16777619)}return h>>>0};
+const rng=seed=>()=>{seed+=0x6D2B79F5;let t=seed;t=Math.imul(t^t>>>15,t|1);t^=t+Math.imul(t^t>>>7,t|61);return((t^t>>>14)>>>0)/4294967296};
+export function generate({draw,method,personal,signal}){if(!methods[method]||!String(personal).trim()||!Array.isArray(signal)||signal.length!==3)throw new Error('Invalid ritual');const raw=`${draw}|${method}|${personal.trim()}|${signal.join(':')}|numera-v1`;const random=rng(hash(raw));const pool=Array.from({length:49},(_,i)=>i+1);for(let i=pool.length-1;i;i--){const j=Math.floor(random()*(i+1));[pool[i],pool[j]]=[pool[j],pool[i]]}const numbers=pool.slice(0,6).sort((a,b)=>a-b);return{numbers,fingerprint:hash(raw).toString(36).slice(0,7),algorithm:'NUMERA v1'};}
