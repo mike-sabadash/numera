@@ -1,15 +1,38 @@
 <!doctype html>
 <html lang="ru">
-<head>
-  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="theme-color" content="#101314"><meta name="description" content="NUMERA — персональный ритуал выбора чисел.">
-  <title>NUMERA — твои числа, твой момент</title><link rel="stylesheet" href="styles.css">
-</head>
-<body>
-  <header class="top"><button class="brand" id="home" aria-label="На главную">NUMERA<span>•</span></button><div class="top__right"><button class="quiet" id="about">Как это работает</button><button class="quiet" id="history">Мои наборы <b id="saved-count">0</b></button></div></header>
-  <main id="app"></main>
-  <footer><span>NUMERA · PERSONAL NUMBER STUDIO</span><span>18+ · Не предсказывает и не повышает вероятность выигрыша.</span></footer>
-  <dialog id="dialog"><button class="dialog__close" id="close-dialog" aria-label="Закрыть">×</button><div id="dialog-content"></div></dialog><div id="toast" role="status" aria-live="polite"></div>
-  <script type="module" src="app.js"></script>
-</body>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="theme-color" content="#101314" />
+    <meta
+      name="description"
+      content="NUMERA — персональный ритуал выбора чисел."
+    />
+    <title>NUMERA — твои числа, твой момент</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="top">
+      <button class="brand" id="home" aria-label="На главную"></button>
+      <div class="top__right">
+        <button class="quiet" id="about">Как это работает</button
+        ><button class="quiet" id="history">
+          Мои наборы <b id="saved-count">0</b>
+        </button>
+      </div>
+    </header>
+    <main id="app"></main>
+    <footer>
+      <span>NUMERA · PERSONAL NUMBER STUDIO</span
+      ><span>18+ · Не предсказывает и не повышает вероятность выигрыша.</span>
+    </footer>
+    <dialog id="dialog">
+      <button class="dialog__close" id="close-dialog" aria-label="Закрыть">
+        ×
+      </button>
+      <div id="dialog-content"></div>
+    </dialog>
+    <div id="toast" role="status" aria-live="polite"></div>
+    <script type="module" src="app.js"></script>
+  </body>
 </html>
