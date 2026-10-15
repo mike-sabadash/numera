@@ -1,19 +1,22 @@
 name: Deploy NUMERA
+
 on:
   push:
     branches: [main]
   workflow_dispatch:
+
 permissions:
   contents: read
+  pages: write
+  id-token: write
+
 concurrency:
   group: numera-production
   cancel-in-progress: false
+
 jobs:
-  deploy:
+  verify:
     runs-on: ubuntu-latest
-    env:
-      DOMAIN: numera.rechord.online
-      HOST: 213.182.208.29
     steps:
       - uses: actions/checkout@v4
       - name: Check static app
@@ -22,11 +25,35 @@ jobs:
           test -s app.js
           test -s engine.js
           test -s styles.css
+
+  pages:
+    needs: verify
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: .
+      - id: deployment
+        uses: actions/deploy-pages@v4
+
+  custom-domain:
+    needs: verify
+    if: ${{ secrets.NUMERA_SERVER_SSH_KEY != '' }}
+    runs-on: ubuntu-latest
+    env:
+      DOMAIN: numera.rechord.online
+      HOST: 213.182.208.29
+    steps:
+      - uses: actions/checkout@v4
       - name: Configure SSH
         env:
           SSH_KEY: ${{ secrets.NUMERA_SERVER_SSH_KEY }}
         run: |
-          test -n "$SSH_KEY" || { echo 'NUMERA_SERVER_SSH_KEY is not configured'; exit 1; }
           install -m 700 -d ~/.ssh
           printf '%s\n' "$SSH_KEY" > ~/.ssh/numera
           chmod 600 ~/.ssh/numera
@@ -50,5 +77,5 @@ jobs:
           nginx -t
           systemctl reload nginx
           REMOTE
-      - name: Verify HTTP
+      - name: Verify custom domain
         run: curl --retry 6 --retry-delay 4 -fsSI "http://$DOMAIN/"
