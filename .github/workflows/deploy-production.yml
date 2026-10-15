@@ -1,4 +1,4 @@
-name: Deploy NUMERA
+name: Publish NUMERA Preview
 
 on:
   push:
@@ -11,12 +11,15 @@ permissions:
   id-token: write
 
 concurrency:
-  group: numera-production
+  group: numera-pages
   cancel-in-progress: false
 
 jobs:
-  verify:
+  deploy:
     runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
       - name: Check static app
@@ -25,57 +28,9 @@ jobs:
           test -s app.js
           test -s engine.js
           test -s styles.css
-
-  pages:
-    needs: verify
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - uses: actions/checkout@v4
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
           path: .
       - id: deployment
         uses: actions/deploy-pages@v4
-
-  custom-domain:
-    needs: verify
-    if: ${{ secrets.NUMERA_SERVER_SSH_KEY != '' }}
-    runs-on: ubuntu-latest
-    env:
-      DOMAIN: numera.rechord.online
-      HOST: 213.182.208.29
-    steps:
-      - uses: actions/checkout@v4
-      - name: Configure SSH
-        env:
-          SSH_KEY: ${{ secrets.NUMERA_SERVER_SSH_KEY }}
-        run: |
-          install -m 700 -d ~/.ssh
-          printf '%s\n' "$SSH_KEY" > ~/.ssh/numera
-          chmod 600 ~/.ssh/numera
-          ssh-keyscan -H "$HOST" >> ~/.ssh/known_hosts
-      - name: Deploy NUMERA only
-        run: |
-          rsync -az --delete --exclude .git --exclude .github -e "ssh -i ~/.ssh/numera -o IdentitiesOnly=yes" ./ root@$HOST:/var/www/numera/
-          ssh -i ~/.ssh/numera -o IdentitiesOnly=yes root@$HOST 'bash -s' <<'REMOTE'
-          set -e
-          cat >/etc/nginx/sites-available/numera.rechord.online <<'NGINX'
-          server {
-            listen 80;
-            listen [::]:80;
-            server_name numera.rechord.online;
-            root /var/www/numera;
-            index index.html;
-            location / { try_files $uri $uri/ /index.html; }
-          }
-          NGINX
-          ln -sfn /etc/nginx/sites-available/numera.rechord.online /etc/nginx/sites-enabled/numera.rechord.online
-          nginx -t
-          systemctl reload nginx
-          REMOTE
-      - name: Verify custom domain
-        run: curl --retry 6 --retry-delay 4 -fsSI "http://$DOMAIN/"
